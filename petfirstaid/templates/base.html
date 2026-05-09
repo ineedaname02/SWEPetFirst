@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}PetAid — Pet First-Aid Guide{% endblock %}</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Design Tokens ─────────────────────────────────── */
+    :root {
+      --clr-primary:    #1a6b4a;
+      --clr-primary-lt: #e8f5ee;
+      --clr-accent:     #f4a261;
+      --clr-danger:     #e63946;
+      --clr-warning-bg: #fff3cd;
+      --clr-dark:       #1c2b22;
+      --clr-surface:    #ffffff;
+      --clr-muted:      #6c757d;
+      --radius:         12px;
+      --shadow:         0 4px 20px rgba(0,0,0,.08);
+      --font-display:   'Playfair Display', serif;
+      --font-body:      'Nunito', sans-serif;
+    }
+
+    /* ── Base ───────────────────────────────────────────── */
+    body {
+      font-family: var(--font-body);
+      background: #f4f7f5;
+      color: #2d3a30;
+      min-height: 100vh;
+    }
+
+    h1, h2, h3, .display-font { font-family: var(--font-display); }
+
+    /* ── Navbar ─────────────────────────────────────────── */
+    .navbar {
+      background: var(--clr-dark);
+      padding: .9rem 1.5rem;
+    }
+    .navbar-brand {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      color: #fff !important;
+      letter-spacing: -.5px;
+    }
+    .navbar-brand span { color: var(--clr-accent); }
+    .nav-link { color: rgba(255,255,255,.8) !important; font-weight: 600; }
+    .nav-link:hover, .nav-link.active { color: #fff !important; }
+
+    /* ── Buttons ─────────────────────────────────────────── */
+    .btn-primary {
+      background: var(--clr-primary);
+      border-color: var(--clr-primary);
+      border-radius: 8px;
+      font-weight: 700;
+    }
+    .btn-primary:hover { background: #155c3e; border-color: #155c3e; }
+    .btn-outline-primary {
+      color: var(--clr-primary);
+      border-color: var(--clr-primary);
+      border-radius: 8px;
+      font-weight: 700;
+    }
+    .btn-outline-primary:hover {
+      background: var(--clr-primary);
+      color: #fff;
+    }
+
+    /* ── Cards ───────────────────────────────────────────── */
+    .card {
+      border: none;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .card-header {
+      border-radius: var(--radius) var(--radius) 0 0 !important;
+      font-weight: 700;
+    }
+
+    /* ── Pet badge chips ─────────────────────────────────── */
+    .pet-chip {
+      display: inline-block;
+      padding: .35rem .9rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: .85rem;
+      cursor: pointer;
+      transition: all .2s;
+      border: 2px solid transparent;
+    }
+    .pet-chip.dog  { background:#dbeafe; color:#1e40af; }
+    .pet-chip.cat  { background:#fce7f3; color:#9d174d; }
+    .pet-chip.rabbit { background:#ede9fe; color:#5b21b6; }
+    .pet-chip.hamster{ background:#fef3c7; color:#92400e; }
+    .pet-chip:hover, .pet-chip.active { opacity:.85; border-color: currentColor; }
+
+    /* ── Emergency badge ─────────────────────────────────── */
+    .badge-emergency {
+      background: #fde8e8;
+      color: var(--clr-danger);
+      border-radius: 6px;
+      font-size: .78rem;
+      font-weight: 700;
+      padding: .25rem .6rem;
+    }
+
+    /* ── Step list ───────────────────────────────────────── */
+    .step-item {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid #e9ecef;
+    }
+    .step-item:last-child { border-bottom: none; }
+    .step-number {
+      min-width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--clr-primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: .9rem;
+      flex-shrink: 0;
+    }
+
+    /* ── Warning box ─────────────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border-left: 4px solid var(--clr-danger);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 1rem 1.25rem;
+    }
+
+    /* ── Quiz ────────────────────────────────────────────── */
+    .quiz-option {
+      display: block;
+      padding: .85rem 1.1rem;
+      border: 2px solid #dee2e6;
+      border-radius: 10px;
+      margin-bottom: .6rem;
+      cursor: pointer;
+      transition: all .2s;
+      font-weight: 600;
+    }
+    .quiz-option:hover { border-color: var(--clr-primary); background: var(--clr-primary-lt); }
+    .quiz-option input[type="radio"] { display: none; }
+    .quiz-option.selected { border-color: var(--clr-primary); background: var(--clr-primary-lt); }
+    .quiz-option.correct  { border-color: #198754; background: #d1e7dd; }
+    .quiz-option.wrong    { border-color: var(--clr-danger); background: #f8d7da; }
+
+    .progress-quiz {
+      height: 8px;
+      border-radius: 999px;
+      background: #dee2e6;
+      margin-bottom: 1.5rem;
+    }
+    .progress-quiz .bar {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--clr-primary);
+      transition: width .4s ease;
+    }
+
+    /* ── Score result ─────────────────────────────────────── */
+    .score-circle {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      background: var(--clr-primary);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+    }
+    .score-circle .pct { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+    .score-circle .lbl { font-size: .75rem; opacity: .85; }
+
+    /* ── Hero ─────────────────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, var(--clr-dark) 0%, #2d5a3d 100%);
+      color: #fff;
+      padding: 4rem 0 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    /* ── Footer ───────────────────────────────────────────── */
+    footer {
+      background: var(--clr-dark);
+      color: rgba(255,255,255,.6);
+      padding: 1.5rem 0;
+      margin-top: 4rem;
+      font-size: .875rem;
+    }
+    footer a { color: var(--clr-accent); text-decoration: none; }
+
+    /* ── Utility ──────────────────────────────────────────── */
+    .text-primary { color: var(--clr-primary) !important; }
+    .bg-primary-lt { background: var(--clr-primary-lt) !important; }
+    .section-title { font-family: var(--font-display); color: var(--clr-dark); }
+  </style>
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- ── Navbar ─────────────────────────────────────────── -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="{{ url_for('index') }}">
+      <i class="bi bi-heart-pulse-fill me-1" style="color:var(--clr-accent)"></i>
+      Pet<span>Aid</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
+            style="border-color:rgba(255,255,255,.3)">
+      <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav ms-auto gap-1">
+        <li class="nav-item">
+          <a class="nav-link {% if request.endpoint=='index' %}active{% endif %}"
+             href="{{ url_for('index') }}"><i class="bi bi-house me-1"></i>Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.endpoint=='search' %}active{% endif %}"
+             href="{{ url_for('search') }}"><i class="bi bi-search me-1"></i>Search</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.endpoint=='quiz_list' %}active{% endif %}"
+             href="{{ url_for('quiz_list') }}"><i class="bi bi-patch-question me-1"></i>Quizzes</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Flash messages ─────────────────────────────────── -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="container mt-3">
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }} alert-dismissible fade show" role="alert">
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- ── Page content ──────────────────────────────────── -->
+{% block content %}{% endblock %}
+
+<!-- ── Footer ─────────────────────────────────────────── -->
+<footer>
+  <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <span>
+      <i class="bi bi-heart-pulse-fill" style="color:var(--clr-accent)"></i>
+      <strong style="color:#fff">PetAid</strong> — Pet Emergency First-Aid System
+    </span>
+    <span>
+      ⚠️ This system provides <em>first-aid guidance only</em>.
+      Always consult a licensed veterinarian for professional care.
+    </span>
+  </div>
+</footer>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

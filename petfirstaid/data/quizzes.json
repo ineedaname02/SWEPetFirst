@@ -1,0 +1,337 @@
+[
+  {
+    "id": 1,
+    "pet_type": "Dog",
+    "topic": "Dog Choking",
+    "difficulty": "Beginner",
+    "questions": [
+      {
+        "id": 1,
+        "text": "What should you do FIRST if you suspect your dog is choking?",
+        "options": [
+          "Perform a blind finger sweep immediately",
+          "Restrain the dog gently and look inside the mouth",
+          "Give the dog water to dislodge the object",
+          "Leave the dog alone to cough it out"
+        ],
+        "correct": 1,
+        "explanation": "Restraining the dog calmly and looking in the mouth first allows you to assess whether the object is visible and retrievable without risking pushing it deeper."
+      },
+      {
+        "id": 2,
+        "text": "What is the danger of performing a 'blind finger sweep' in a choking dog?",
+        "options": [
+          "It can cause the dog to bark loudly",
+          "It may push the object deeper into the airway",
+          "It is too slow to be effective",
+          "It is only dangerous in cats, not dogs"
+        ],
+        "correct": 1,
+        "explanation": "A blind finger sweep without being able to see the object risks pushing it further down the airway, making the blockage worse and more dangerous."
+      },
+      {
+        "id": 3,
+        "text": "Where should you apply Heimlich-style thrusts on a choking dog?",
+        "options": [
+          "On the dog's head",
+          "On the sides of the rib cage",
+          "On the dog's lower back",
+          "Under the front legs"
+        ],
+        "correct": 1,
+        "explanation": "Placing both hands on the side of the rib cage and applying firm, quick inward and upward pressure mimics the Heimlich manoeuvre and can dislodge the airway obstruction."
+      },
+      {
+        "id": 4,
+        "text": "After successfully removing the choking object, what should you do?",
+        "options": [
+          "Give the dog a treat to calm it down",
+          "Nothing — the emergency is over",
+          "Still transport the dog to a veterinarian",
+          "Give the dog plenty of water"
+        ],
+        "correct": 2,
+        "explanation": "Even after removing the object, internal damage may have occurred. A veterinarian should examine the dog to rule out airway injury, swelling, or aspiration."
+      },
+      {
+        "id": 5,
+        "text": "What should you do if the dog loses consciousness during a choking episode?",
+        "options": [
+          "Begin rescue breathing into the dog's nose",
+          "Perform chest compressions only",
+          "Wait and see if the dog recovers on its own",
+          "Shake the dog vigorously to wake it"
+        ],
+        "correct": 0,
+        "explanation": "If the dog is unconscious, rescue breathing — closing the mouth and breathing into the nose until the chest rises — can help maintain oxygenation while you arrange emergency veterinary transport."
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "pet_type": "Dog",
+    "topic": "Dog Poisoning",
+    "difficulty": "Intermediate",
+    "questions": [
+      {
+        "id": 1,
+        "text": "What should you NOT do if your dog has been poisoned?",
+        "options": [
+          "Call the veterinarian immediately",
+          "Identify the suspected poison",
+          "Induce vomiting without vet guidance",
+          "Keep the dog calm and still"
+        ],
+        "correct": 2,
+        "explanation": "Inducing vomiting without veterinary instruction is dangerous — some toxins cause greater damage when they come back up, and some require specific treatments rather than emesis."
+      },
+      {
+        "id": 2,
+        "text": "Why is it important to collect the suspected poison container?",
+        "options": [
+          "So you can try to find an antidote yourself",
+          "To help the vet identify the exact toxin and treatment",
+          "So you can return it to the shop",
+          "It is not important"
+        ],
+        "correct": 1,
+        "explanation": "Providing the exact substance, concentration, and quantity ingested allows the veterinarian to administer the correct antidote or treatment protocol promptly."
+      },
+      {
+        "id": 3,
+        "text": "If your dog is unconscious due to poisoning, how should you position it?",
+        "options": [
+          "On its back with legs elevated",
+          "Sitting upright",
+          "On its side to prevent choking",
+          "In any comfortable position"
+        ],
+        "correct": 2,
+        "explanation": "Positioning an unconscious dog on its side (recovery position) prevents the dog from choking on vomit and keeps the airway clear during transport."
+      },
+      {
+        "id": 4,
+        "text": "Which of the following is a common sign of dog poisoning?",
+        "options": [
+          "Increased appetite",
+          "Excessive energy",
+          "Tremors or seizures",
+          "Bright pink gums"
+        ],
+        "correct": 2,
+        "explanation": "Tremors, seizures, vomiting, drooling, dilated pupils, and disorientation are common signs of poisoning in dogs and require immediate veterinary attention."
+      },
+      {
+        "id": 5,
+        "text": "What should you give a poisoned dog while waiting for veterinary care?",
+        "options": [
+          "Milk to coat the stomach",
+          "Nothing — no food or water unless instructed by a vet",
+          "Salt water to induce vomiting",
+          "Activated charcoal from your kitchen"
+        ],
+        "correct": 1,
+        "explanation": "Unless specifically instructed by a veterinarian, you should give nothing by mouth. Milk, salt water, and home remedies can worsen the situation or interfere with medical treatment."
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "pet_type": "Cat",
+    "topic": "Cat Choking",
+    "difficulty": "Beginner",
+    "questions": [
+      {
+        "id": 1,
+        "text": "Why should you wrap a cat in a towel before examining its mouth?",
+        "options": [
+          "To keep the cat warm",
+          "To prevent the cat from scratching you",
+          "To help the cat breathe better",
+          "Towels are not useful in this situation"
+        ],
+        "correct": 1,
+        "explanation": "A distressed cat in an emergency may scratch or bite even if normally gentle. Wrapping in a thick towel protects you from injury while allowing you to safely open the cat's mouth."
+      },
+      {
+        "id": 2,
+        "text": "How many abdominal thrusts should you apply to a choking cat before checking the mouth?",
+        "options": ["2", "5", "10", "15"],
+        "correct": 1,
+        "explanation": "Five gentle abdominal thrusts applied with two fingers against the cat's back are recommended before rechecking the mouth for the object, to balance effectiveness with the cat's fragility."
+      },
+      {
+        "id": 3,
+        "text": "Why is a full Heimlich manoeuvre NOT recommended for cats?",
+        "options": [
+          "Cats are too fast to restrain",
+          "Cats have different lungs",
+          "Cats are too small and fragile — it may cause internal injury",
+          "The Heimlich manoeuvre only works on humans"
+        ],
+        "correct": 2,
+        "explanation": "The full force used in a human or large dog Heimlich can rupture internal organs in a small cat. A gentler, modified version using two fingers is the safer approach."
+      },
+      {
+        "id": 4,
+        "text": "What should you do after helping a choking cat?",
+        "options": [
+          "Feed the cat to check its swallowing is normal",
+          "Take the cat to a veterinarian immediately",
+          "Let the cat rest for a week before seeing a vet",
+          "Only see a vet if the cat stops eating"
+        ],
+        "correct": 1,
+        "explanation": "Even if the object is removed, there may be airway irritation, swelling, or aspiration. Immediate veterinary assessment is always recommended after any choking episode."
+      },
+      {
+        "id": 5,
+        "text": "What is rescue breathing for a cat?",
+        "options": [
+          "Pressing the chest repeatedly",
+          "Breathing into the cat's mouth only",
+          "Closing the cat's mouth and breathing into its nose",
+          "Laying the cat flat and waiting"
+        ],
+        "correct": 2,
+        "explanation": "For cats (and dogs), rescue breathing involves closing the animal's mouth and gently breathing into the nose — this delivers air into the lungs when the animal cannot breathe independently."
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "pet_type": "Rabbit",
+    "topic": "Rabbit Heatstroke",
+    "difficulty": "Beginner",
+    "questions": [
+      {
+        "id": 1,
+        "text": "Which part of a rabbit's body is the most effective area to cool during heatstroke?",
+        "options": [
+          "The tail",
+          "The ears",
+          "The feet",
+          "The belly"
+        ],
+        "correct": 1,
+        "explanation": "Rabbits regulate body temperature primarily through their ears, which are rich in blood vessels. Gently wetting the ears with cool water is the most effective first cooling measure."
+      },
+      {
+        "id": 2,
+        "text": "What type of water should you use to cool a rabbit with heatstroke?",
+        "options": [
+          "Ice water for fastest effect",
+          "Boiling water to open pores",
+          "Cool (not ice cold) water",
+          "Warm water"
+        ],
+        "correct": 2,
+        "explanation": "Ice cold water causes shock in small animals like rabbits. Cool water reduces temperature gradually and safely without the risk of thermal shock."
+      },
+      {
+        "id": 3,
+        "text": "Why is rabbit heatstroke considered more dangerous than in dogs or cats?",
+        "options": [
+          "Rabbits have thicker fur",
+          "Rabbits can die within minutes — they have very little heat tolerance",
+          "Rabbits cannot drink water",
+          "Rabbits overheat less often"
+        ],
+        "correct": 1,
+        "explanation": "Rabbits are extremely vulnerable to heat and can suffer fatal organ failure within minutes of heatstroke onset. Immediate action and urgent veterinary care are critical."
+      },
+      {
+        "id": 4,
+        "text": "Should you take a rabbit to the vet if it appears to recover from heatstroke?",
+        "options": [
+          "No — if it is moving normally, it is fine",
+          "Only if symptoms return after 24 hours",
+          "Yes — internal organ damage may not be immediately visible",
+          "No — just keep it cool for the rest of the day"
+        ],
+        "correct": 2,
+        "explanation": "Rabbits mask signs of illness very well. Even if a rabbit appears to recover, internal kidney or liver damage from heatstroke can be life-threatening if not treated promptly by a vet."
+      },
+      {
+        "id": 5,
+        "text": "What should you NOT do when treating a rabbit with heatstroke?",
+        "options": [
+          "Move it to a cool area",
+          "Wet its ears with cool water",
+          "Submerge the rabbit fully in water",
+          "Offer fresh cool water"
+        ],
+        "correct": 2,
+        "explanation": "Fully submerging a rabbit in water causes extreme stress and can result in shock or drowning. Targeted cooling of the ears and gentle misting of the body is the correct approach."
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "pet_type": "Hamster",
+    "topic": "Hamster Seizure",
+    "difficulty": "Beginner",
+    "questions": [
+      {
+        "id": 1,
+        "text": "What should you do FIRST when you see your hamster having a seizure?",
+        "options": [
+          "Pick it up immediately to comfort it",
+          "Stay calm and clear the area around the hamster",
+          "Put something in its mouth to prevent biting",
+          "Shake the hamster to wake it up"
+        ],
+        "correct": 1,
+        "explanation": "The priority during a hamster seizure is to prevent it from injuring itself on cage objects. Stay calm, do not pick it up, and clear the area of anything that could cause harm."
+      },
+      {
+        "id": 2,
+        "text": "How long should a hamster seizure last before you consider it a serious emergency?",
+        "options": [
+          "More than 30 seconds",
+          "More than 2 minutes",
+          "More than 10 minutes",
+          "Any seizure is immediately life-threatening"
+        ],
+        "correct": 1,
+        "explanation": "A seizure lasting more than 2 minutes or seizures that recur require immediate veterinary attention, as prolonged seizures can cause brain damage or indicate a serious underlying condition."
+      },
+      {
+        "id": 3,
+        "text": "Why should you NOT put an object in a seizing hamster's mouth?",
+        "options": [
+          "The hamster will chew and destroy it",
+          "It can break the hamster's teeth or cause injury",
+          "Hamsters do not have teeth",
+          "It helps but is just unnecessary"
+        ],
+        "correct": 1,
+        "explanation": "Hamsters do not swallow their tongues during seizures. Inserting objects risks breaking teeth, injuring the mouth, or getting bitten during involuntary jaw movements."
+      },
+      {
+        "id": 4,
+        "text": "What environment should you create for a hamster recovering from a seizure?",
+        "options": [
+          "Bright lights and loud music to stimulate it",
+          "A warm, quiet, dim environment",
+          "A cool, wet environment",
+          "Leave it in its normal cage with no changes"
+        ],
+        "correct": 1,
+        "explanation": "After a seizure, the hamster is confused and sensitive. A warm, quiet, dimly lit space reduces sensory stimulation and stress, allowing the hamster to recover more comfortably."
+      },
+      {
+        "id": 5,
+        "text": "What information should you record to help your vet diagnose the cause of the seizure?",
+        "options": [
+          "The hamster's favourite food",
+          "The colour of the hamster's eyes during the seizure",
+          "The duration and frequency of seizures",
+          "The time of the last cage cleaning"
+        ],
+        "correct": 2,
+        "explanation": "Duration and frequency of seizures are critical diagnostic data for a veterinarian. They help differentiate between epilepsy, poisoning, infections, tumours, and other causes."
+      }
+    ]
+  }
+]

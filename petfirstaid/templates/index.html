@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}PetAid — Pet Emergency First-Aid{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero ─────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="container position-relative">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <p class="text-uppercase fw-700 mb-2" style="color:var(--clr-accent);letter-spacing:2px;font-size:.85rem">
+          Veterinary First-Aid Guidance System
+        </p>
+        <h1 class="display-font display-5 fw-bold mb-3">
+          Fast, Trusted First-Aid<br>for Your Small Pets
+        </h1>
+        <p class="mb-4" style="color:rgba(255,255,255,.8);font-size:1.05rem;max-width:500px">
+          Veterinary-approved step-by-step emergency guides for dogs, cats, rabbits and hamsters.
+          Find the right help — fast — when your pet needs it most.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <a href="{{ url_for('search') }}" class="btn btn-warning btn-lg fw-bold px-4">
+            <i class="bi bi-search me-2"></i>Find Emergency Guide
+          </a>
+          <a href="{{ url_for('quiz_list') }}" class="btn btn-outline-light btn-lg px-4">
+            <i class="bi bi-patch-question me-2"></i>Take a Quiz
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-5 text-center d-none d-lg-block">
+        <div style="font-size:9rem;line-height:1;opacity:.9">🐾</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Quick Access by Pet ───────────────────────────────── -->
+<section class="py-5">
+  <div class="container">
+    <h2 class="section-title h4 mb-4">Quick Access by Pet Type</h2>
+    <div class="row g-3">
+      {% set pet_icons = {"Dog":"🐶","Cat":"🐱","Rabbit":"🐰","Hamster":"🐹"} %}
+      {% set pet_colors = {"Dog":"#dbeafe","Cat":"#fce7f3","Rabbit":"#ede9fe","Hamster":"#fef3c7"} %}
+      {% set pet_text = {"Dog":"#1e40af","Cat":"#9d174d","Rabbit":"#5b21b6","Hamster":"#92400e"} %}
+      {% for pet in pets %}
+      <div class="col-6 col-md-3">
+        <a href="{{ url_for('search', pet_type=pet) }}"
+           class="card text-decoration-none h-100 p-3 text-center"
+           style="background:{{ pet_colors.get(pet,'#f0f0f0') }};border:2px solid transparent;transition:.2s"
+           onmouseover="this.style.borderColor='{{ pet_text.get(pet,'#333') }}'"
+           onmouseout="this.style.borderColor='transparent'">
+          <div style="font-size:3rem">{{ pet_icons.get(pet,'🐾') }}</div>
+          <div class="fw-800 mt-1" style="color:{{ pet_text.get(pet,'#333') }};font-size:1.1rem">
+            {{ pet }}
+          </div>
+          <div class="small mt-1" style="color:{{ pet_text.get(pet,'#555') }};opacity:.8">
+            Emergency Guides
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ── Emergency Quick Search ───────────────────────────── -->
+<section class="py-4" style="background:#fff">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-5">
+        <h2 class="section-title h4 mb-2">Emergency Search</h2>
+        <p class="text-muted mb-0">
+          Select your pet and the type of emergency for immediate step-by-step guidance.
+        </p>
+      </div>
+      <div class="col-lg-7">
+        <form action="{{ url_for('search') }}" method="GET" class="row g-2">
+          <div class="col-sm-4">
+            <select name="pet_type" class="form-select fw-600">
+              <option value="">All Pets</option>
+              {% for pet in pets %}
+                <option value="{{ pet }}">{{ pet }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-sm-4">
+            <select name="emergency_category" class="form-select fw-600">
+              <option value="">All Emergencies</option>
+              {% for cat in categories %}
+                <option value="{{ cat }}">{{ cat }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-sm-4">
+            <button type="submit" class="btn btn-primary w-100 fw-700">
+              <i class="bi bi-search me-1"></i> Search
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Features ─────────────────────────────────────────── -->
+<section class="py-5">
+  <div class="container">
+    <h2 class="section-title h4 mb-4 text-center">What PetAid Offers</h2>
+    <div class="row g-4">
+      {% set features = [
+        ("bi-list-ol","Step-by-Step First Aid","Veterinary-approved, numbered instructions for each emergency type — clear enough to follow under pressure."),
+        ("bi-play-circle","Video Demonstrations","Watch vetted instructional videos that visually demonstrate emergency procedures."),
+        ("bi-patch-question","Knowledge Quizzes","Test your preparedness with interactive quizzes approved by veterinary professionals."),
+        ("bi-shield-check","Vet-Approved Content","All guides and quiz answers are reviewed and verified by licensed veterinarians before publication."),
+      ] %}
+      {% for icon, title, desc in features %}
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 p-4">
+          <i class="bi {{ icon }} mb-3" style="font-size:2rem;color:var(--clr-primary)"></i>
+          <h5 class="fw-800 mb-2">{{ title }}</h5>
+          <p class="text-muted mb-0 small">{{ desc }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ── Disclaimer ────────────────────────────────────────── -->
+<section class="pb-5">
+  <div class="container">
+    <div class="warning-box d-flex gap-3 align-items-start">
+      <i class="bi bi-exclamation-triangle-fill text-danger mt-1" style="font-size:1.3rem;flex-shrink:0"></i>
+      <div>
+        <strong>Important Notice:</strong> PetAid provides first-aid guidance only and does not replace
+        professional veterinary care. In any serious emergency, always contact a licensed veterinarian or
+        emergency animal clinic immediately. The information in this system has been approved by veterinary
+        professionals but is intended as a temporary measure until professional care is available.
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

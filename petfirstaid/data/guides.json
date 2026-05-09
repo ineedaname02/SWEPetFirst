@@ -1,0 +1,198 @@
+{
+  "pets": ["Dog", "Cat", "Rabbit", "Hamster"],
+  "emergency_categories": ["Choking", "Poisoning", "Bleeding", "Heatstroke", "Seizure", "Fracture"],
+  "guides": [
+    {
+      "id": 1,
+      "pet_type": "Dog",
+      "emergency_category": "Choking",
+      "title": "Dog Choking First Aid",
+      "summary": "Immediate steps to help a choking dog before reaching a vet.",
+      "warning": "Do NOT perform a blind finger sweep as this may push the object deeper. Stay calm to avoid panicking your dog.",
+      "steps": [
+        "Restrain your dog gently but firmly to prevent biting.",
+        "Open the dog's mouth carefully and look inside for any visible object.",
+        "If you can see the object clearly, use your fingers or tweezers to carefully remove it.",
+        "If you cannot see or remove it, place both hands on the side of the rib cage and apply firm, quick pressure (Heimlich-style thrust).",
+        "Repeat thrusts up to 5 times and check the mouth after each attempt.",
+        "If the dog loses consciousness, begin rescue breathing: close the mouth and breathe into the nose until the chest rises.",
+        "Transport to a veterinarian immediately even if the object is removed."
+      ],
+      "next_steps": ["Contact your nearest veterinarian immediately.", "Monitor your dog for breathing difficulties for at least 24 hours."],
+      "video_id": 1
+    },
+    {
+      "id": 2,
+      "pet_type": "Dog",
+      "emergency_category": "Poisoning",
+      "title": "Dog Poisoning First Aid",
+      "summary": "Steps to take if your dog has ingested a toxic substance.",
+      "warning": "Do NOT induce vomiting unless specifically instructed by a veterinarian. Some substances cause more damage coming back up.",
+      "steps": [
+        "Stay calm and keep your dog as still and comfortable as possible.",
+        "Identify the suspected poison — collect the container, plant, or substance.",
+        "Do NOT give food, water, or try to induce vomiting without vet guidance.",
+        "Check your dog's breathing, pulse, and level of consciousness.",
+        "If the dog is unconscious or seizing, position it on its side to prevent choking.",
+        "Call your veterinarian or emergency animal poison control immediately.",
+        "Bring the suspected poison sample or packaging with you to the vet."
+      ],
+      "next_steps": ["Call Animal Poison Control at once.", "Do not leave the dog unattended."],
+      "video_id": 2
+    },
+    {
+      "id": 3,
+      "pet_type": "Dog",
+      "emergency_category": "Heatstroke",
+      "title": "Dog Heatstroke First Aid",
+      "summary": "Cool your dog down safely and prevent organ damage from overheating.",
+      "warning": "Do NOT use ice-cold water — this can cause shock. Do NOT cover the dog in wet towels for extended periods.",
+      "steps": [
+        "Move the dog immediately to a cool, shaded, or air-conditioned area.",
+        "Pour cool (not ice cold) water over the dog, focusing on the neck, armpits, and groin.",
+        "Fan the dog while wetting to aid evaporative cooling.",
+        "Offer small amounts of cool water to drink if the dog is conscious and able to swallow.",
+        "Place the dog on a cool damp towel — do not wrap it.",
+        "Monitor rectal temperature if a thermometer is available; target below 39.5°C.",
+        "Transport to the vet as soon as possible even if the dog seems to recover."
+      ],
+      "next_steps": ["Seek immediate veterinary attention.", "Heatstroke can cause organ failure even after apparent recovery."],
+      "video_id": null
+    },
+    {
+      "id": 4,
+      "pet_type": "Cat",
+      "emergency_category": "Choking",
+      "title": "Cat Choking First Aid",
+      "summary": "Steps to help a choking cat safely.",
+      "warning": "Cats in distress may scratch or bite. Approach carefully. Do NOT perform a full Heimlich manoeuvre on a cat — it is too small and fragile.",
+      "steps": [
+        "Keep calm — your panic will worsen your cat's distress.",
+        "Gently restrain the cat by wrapping it in a thick towel to prevent scratching.",
+        "Open the mouth carefully and look for any visible foreign object.",
+        "If you can see the object, carefully use tweezers to extract it. Never use your fingers blindly.",
+        "If you cannot remove it, hold the cat with its back against your chest and apply 5 gentle, firm thrusts to the abdomen with two fingers.",
+        "Check the mouth after each thrust.",
+        "If the cat becomes unconscious, begin rescue breaths into the nose.",
+        "Take to a veterinarian immediately."
+      ],
+      "next_steps": ["Seek urgent veterinary care even if the object is removed.", "Monitor for laboured breathing or continued distress."],
+      "video_id": 3
+    },
+    {
+      "id": 5,
+      "pet_type": "Cat",
+      "emergency_category": "Poisoning",
+      "title": "Cat Poisoning First Aid",
+      "summary": "Cats are especially sensitive to many common household substances.",
+      "warning": "Do NOT give milk, salt water, or induce vomiting. Cats metabolise toxins differently and many common remedies are harmful.",
+      "steps": [
+        "Remove the cat from the source of the poison immediately.",
+        "If poison is on the coat or skin, rinse the area thoroughly with warm water.",
+        "Do not allow the cat to groom itself — this reingests the toxin.",
+        "Collect and note the suspected substance, with the container if possible.",
+        "Keep the cat warm, calm and still.",
+        "Do NOT give food, water, or any home remedies.",
+        "Call your veterinarian or animal poison control immediately.",
+        "Transport to the vet with the suspected substance sample."
+      ],
+      "next_steps": ["Contact a vet or poison hotline immediately.", "Keep the cat isolated and monitor for vomiting, tremors or collapse."],
+      "video_id": null
+    },
+    {
+      "id": 6,
+      "pet_type": "Cat",
+      "emergency_category": "Bleeding",
+      "title": "Cat Bleeding First Aid",
+      "summary": "Manage external bleeding in cats while arranging urgent veterinary care.",
+      "warning": "Do NOT use a tourniquet unless it is a life-threatening limb bleed and no other option is available. Do NOT remove objects embedded in a wound.",
+      "steps": [
+        "Wear gloves if available to protect yourself and reduce infection risk.",
+        "Apply gentle but firm pressure to the wound using a clean cloth or gauze.",
+        "Hold pressure continuously for at least 3–5 minutes without lifting the cloth.",
+        "If blood soaks through, add more cloth on top — do not remove the first layer.",
+        "Once bleeding slows, secure the dressing lightly with a bandage if possible.",
+        "Keep the cat as still and calm as possible.",
+        "Transport to a veterinarian immediately even if bleeding appears to have stopped."
+      ],
+      "next_steps": ["Veterinary attention is required for all significant wounds.", "Watch for signs of shock: pale gums, rapid breathing, weakness."],
+      "video_id": null
+    },
+    {
+      "id": 7,
+      "pet_type": "Rabbit",
+      "emergency_category": "Heatstroke",
+      "title": "Rabbit Heatstroke First Aid",
+      "summary": "Rabbits are extremely vulnerable to heat — act fast.",
+      "warning": "Rabbits can die from heatstroke very rapidly. Do NOT submerge the rabbit in water. Do NOT use ice.",
+      "steps": [
+        "Move the rabbit immediately to a cool, shaded indoor area.",
+        "Wet the ears gently with cool (not cold) water — this is the primary heat-exchange area in rabbits.",
+        "Place the rabbit on a damp cool towel.",
+        "Use a fan at a distance to promote gentle airflow.",
+        "Offer fresh cool water but do not force the rabbit to drink.",
+        "Mist the rabbit's body lightly with cool water but avoid wetting the face.",
+        "Transport to the vet immediately — rabbit heatstroke is life-threatening within minutes."
+      ],
+      "next_steps": ["Emergency vet visit is essential even if the rabbit seems better.", "Rabbits hide illness — internal organ damage may not show immediately."],
+      "video_id": null
+    },
+    {
+      "id": 8,
+      "pet_type": "Rabbit",
+      "emergency_category": "Fracture",
+      "title": "Rabbit Fracture First Aid",
+      "summary": "Rabbit bones are fragile — handle with extreme care.",
+      "warning": "Do NOT attempt to splint or straighten the limb yourself. Improper handling can cause paralysis in rabbits with spinal injuries.",
+      "steps": [
+        "Keep the rabbit as still and calm as possible — speak gently.",
+        "Do not allow the rabbit to jump or move freely.",
+        "Gently place the rabbit in a padded, enclosed box or carrier lined with a soft towel.",
+        "Minimise handling to reduce pain and risk of further injury.",
+        "Keep the rabbit warm with a light cover — not too hot.",
+        "Do not offer food or water if surgery may be required.",
+        "Transport to a veterinarian immediately and as smoothly as possible."
+      ],
+      "next_steps": ["Immediate veterinary care is essential.", "Fractures in rabbits often require surgical intervention."],
+      "video_id": null
+    },
+    {
+      "id": 9,
+      "pet_type": "Hamster",
+      "emergency_category": "Seizure",
+      "title": "Hamster Seizure First Aid",
+      "summary": "Steps to keep your hamster safe during and after a seizure.",
+      "warning": "Do NOT pick up the hamster during a seizure — it may bite reflexively and you may injure it. Do NOT put objects in its mouth.",
+      "steps": [
+        "Stay calm and do not attempt to restrain the hamster.",
+        "Clear the area around the hamster to prevent it from injuring itself on cage objects.",
+        "Dim the lights and reduce noise in the room.",
+        "Time the duration of the seizure using a clock.",
+        "Once the seizure ends, the hamster may be confused or weak — this is normal.",
+        "Keep the hamster warm and quiet while it recovers.",
+        "If seizures last more than 2 minutes or recur, seek immediate veterinary care."
+      ],
+      "next_steps": ["Consult a vet even if the hamster appears recovered.", "Record seizure duration and frequency to help the vet diagnose the cause."],
+      "video_id": null
+    },
+    {
+      "id": 10,
+      "pet_type": "Hamster",
+      "emergency_category": "Bleeding",
+      "title": "Hamster Bleeding First Aid",
+      "summary": "Managing bleeding in hamsters requires a very gentle approach.",
+      "warning": "Hamsters are tiny and fragile. Excessive pressure can cause further harm. Any significant bleeding in a hamster is a veterinary emergency.",
+      "steps": [
+        "Remain calm and handle the hamster extremely gently.",
+        "Place a tiny piece of clean, sterile gauze or soft tissue over the wound.",
+        "Apply very light, gentle pressure — do not press hard.",
+        "Hold for 2–3 minutes without lifting the gauze.",
+        "If bleeding is from a limb, keep the limb elevated slightly.",
+        "Place the hamster in a clean, quiet, warm container.",
+        "Transport to a vet as quickly as possible."
+      ],
+      "next_steps": ["Urgent veterinary care is required for any bleeding hamster.", "Do not attempt to clean or treat the wound beyond basic pressure."],
+      "video_id": null
+    }
+  ]
+}

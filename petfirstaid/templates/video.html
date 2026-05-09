@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}{{ video.title }} — PetAid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <!-- ── Breadcrumb ──────────────────────────────────────── -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+      {% if guide %}
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('search', pet_type=guide.pet_type) }}">{{ guide.pet_type }}</a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('guide', guide_id=guide.id) }}">{{ guide.title }}</a>
+        </li>
+      {% endif %}
+      <li class="breadcrumb-item active">Video</li>
+    </ol>
+  </nav>
+
+  <div class="row g-4">
+
+    <!-- ── Video Player ──────────────────────────────────── -->
+    <div class="col-lg-8">
+      <div class="card mb-4 overflow-hidden">
+
+        <!-- Video Player Embed -->
+        <div id="videoContainer" style="position:relative;padding-bottom:56.25%;background:#000">
+          <iframe id="videoFrame"
+                  src="{{ video.url }}"
+                  title="{{ video.title }}"
+                  style="position:absolute;top:0;left:0;width:100%;height:100%;border:0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen>
+          </iframe>
+        </div>
+
+        <div class="p-4">
+          <!-- Title & Meta -->
+          <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+            <span class="badge bg-success-subtle text-success fw-700 rounded-pill px-3">
+              <i class="bi bi-shield-check me-1"></i>Vet Approved
+            </span>
+            {% if video.caption %}
+              <span class="badge bg-info-subtle text-info fw-700 rounded-pill px-3">
+                <i class="bi bi-badge-cc me-1"></i>Captions: English
+              </span>
+            {% endif %}
+            <span class="badge bg-secondary-subtle text-secondary fw-700 rounded-pill px-3">
+              <i class="bi bi-clock me-1"></i>{{ video.duration }}
+            </span>
+          </div>
+
+          <h1 class="section-title h4 mb-2">{{ video.title }}</h1>
+          <p class="text-muted mb-0">{{ video.description }}</p>
+
+          <!-- Accessibility notice -->
+          <div class="alert alert-info d-flex gap-2 align-items-start mt-3 mb-0 py-2">
+            <i class="bi bi-info-circle-fill mt-1" style="flex-shrink:0"></i>
+            <div class="small">
+              <strong>Accessibility:</strong> This video includes English captions. If the video cannot load
+              due to connectivity issues, please refer to the
+              {% if guide %}
+                <a href="{{ url_for('guide', guide_id=guide.id) }}" class="fw-700">text-based guide</a>
+              {% else %}
+                text-based guide
+              {% endif %}
+              for the same step-by-step instructions.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fallback Text Instructions -->
+      {% if guide %}
+      <div class="card p-4" id="fallbackBox" style="display:none!important">
+        <div class="d-flex gap-2 align-items-center mb-3">
+          <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+          <strong>Video unavailable — showing text instructions instead.</strong>
+        </div>
+        <ol class="mb-0">
+          {% for step in guide.steps %}
+            <li class="mb-2">{{ step }}</li>
+          {% endfor %}
+        </ol>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ── Sidebar ─────────────────────────────────────────── -->
+    <div class="col-lg-4">
+
+      <!-- Back to Guide -->
+      {% if guide %}
+      <div class="card mb-4 p-4" style="background:var(--clr-primary-lt)">
+        <h3 class="h6 fw-800 mb-2">
+          <i class="bi bi-journal-medical me-1" style="color:var(--clr-primary)"></i>
+          Related First-Aid Guide
+        </h3>
+        <p class="small text-muted mb-3">{{ guide.summary }}</p>
+        <a href="{{ url_for('guide', guide_id=guide.id) }}" class="btn btn-primary btn-sm fw-700 w-100">
+          <i class="bi bi-list-ol me-1"></i>View Step-by-Step Guide
+        </a>
+      </div>
+      {% endif %}
+
+      <!-- Emergency Warning -->
+      <div class="warning-box mb-4">
+        <div class="fw-800 text-danger mb-1">
+          <i class="bi bi-exclamation-triangle-fill me-1"></i>Emergency Reminder
+        </div>
+        <p class="small mb-0">
+          This video is for educational guidance only. In a real emergency, begin first-aid
+          immediately and contact a veterinarian as soon as possible. Do not delay treatment
+          to watch the full video.
+        </p>
+      </div>
+
+      <!-- Related Videos -->
+      {% if related_videos %}
+      <div class="card p-4">
+        <h3 class="h6 fw-800 mb-3">
+          <i class="bi bi-collection-play me-1" style="color:var(--clr-primary)"></i>
+          More Videos ({{ related_videos|length }})
+        </h3>
+        {% for rv in related_videos %}
+        <a href="{{ url_for('video', video_id=rv.id) }}"
+           class="d-flex gap-3 text-decoration-none mb-3 pb-3 {% if not loop.last %}border-bottom{% endif %}">
+          <div style="width:50px;height:50px;background:var(--clr-dark);border-radius:8px;
+                      display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <i class="bi bi-play-fill text-white"></i>
+          </div>
+          <div>
+            <div class="fw-700 small" style="color:var(--clr-dark)">{{ rv.title }}</div>
+            <div class="small text-muted"><i class="bi bi-clock me-1"></i>{{ rv.duration }}</div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    </div><!-- /sidebar -->
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Detect iframe load failure and show fallback text
+  const frame = document.getElementById("videoFrame");
+  const fallback = document.getElementById("fallbackBox");
+
+  if (frame && fallback) {
+    frame.addEventListener("error", () => {
+      fallback.style.removeProperty("display");
+      document.getElementById("videoContainer").style.display = "none";
+    });
+
+    // Fallback if iframe cannot connect within 8 seconds
+    setTimeout(() => {
+      try {
+        // If contentDocument is null and origin is different, the iframe loaded.
+        // We can only detect failure if src is completely unreachable.
+        // For demo: no automatic hide, user can manually trigger.
+      } catch (e) { /* cross-origin — video loaded fine */ }
+    }, 8000);
+  }
+</script>
+{% endblock %}

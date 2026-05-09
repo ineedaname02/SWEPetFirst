@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Knowledge Quizzes — PetAid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <!-- ── Header ─────────────────────────────────────────── -->
+  <div class="row align-items-center mb-4">
+    <div class="col-md-7">
+      <h1 class="section-title h3 mb-1">Pet First-Aid Quizzes</h1>
+      <p class="text-muted mb-0">
+        Test and build your emergency preparedness knowledge. All answers are verified by veterinary professionals.
+      </p>
+    </div>
+    <div class="col-md-5">
+      <!-- Filter by pet -->
+      <form method="GET" action="{{ url_for('quiz_list') }}" class="d-flex gap-2">
+        <select name="pet_type" class="form-select" onchange="this.form.submit()">
+          <option value="">All Pet Types</option>
+          {% for pet in pets %}
+            <option value="{{ pet }}" {% if selected_pet == pet %}selected{% endif %}>{{ pet }}</option>
+          {% endfor %}
+        </select>
+        {% if selected_pet %}
+          <a href="{{ url_for('quiz_list') }}" class="btn btn-outline-secondary">Clear</a>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Quiz Cards ──────────────────────────────────────── -->
+  {% if quizzes %}
+  <div class="row g-4">
+    {% set diff_colors = {"Beginner":"#d1e7dd","Intermediate":"#fff3cd","Advanced":"#f8d7da"} %}
+    {% set diff_text = {"Beginner":"#0f5132","Intermediate":"#664d03","Advanced":"#842029"} %}
+    {% set pet_icons = {"Dog":"🐶","Cat":"🐱","Rabbit":"🐰","Hamster":"🐹"} %}
+    {% for quiz in quizzes %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100 p-4" style="transition:.2s"
+           onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 30px rgba(0,0,0,.12)'"
+           onmouseout="this.style.transform='';this.style.boxShadow=''">
+
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div style="font-size:2.5rem">{{ pet_icons.get(quiz.pet_type, '🐾') }}</div>
+          <span class="badge rounded-pill fw-700 px-3"
+                style="background:{{ diff_colors.get(quiz.difficulty,'#e9ecef') }};
+                       color:{{ diff_text.get(quiz.difficulty,'#555') }}">
+            {{ quiz.difficulty }}
+          </span>
+        </div>
+
+        <h2 class="h6 fw-800 mb-1">{{ quiz.topic }}</h2>
+        <p class="small text-muted mb-3">{{ quiz.pet_type }} Emergency Care</p>
+
+        <div class="d-flex gap-3 small text-muted mb-4">
+          <span><i class="bi bi-patch-question me-1"></i>{{ quiz.questions|length }} questions</span>
+          <span><i class="bi bi-shield-check me-1"></i>Vet approved</span>
+        </div>
+
+        <div class="mt-auto">
+          <a href="{{ url_for('quiz', quiz_id=quiz.id) }}" class="btn btn-primary w-100 fw-700">
+            <i class="bi bi-play-fill me-1"></i>Start Quiz
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="card p-5 text-center">
+    <div style="font-size:4rem;opacity:.3">📝</div>
+    <h3 class="h5 fw-800 mt-3 mb-2">No quizzes found</h3>
+    <p class="text-muted">
+      {% if selected_pet %}
+        There are no quizzes available for {{ selected_pet }} yet.
+      {% else %}
+        No quizzes available at the moment.
+      {% endif %}
+    </p>
+    {% if selected_pet %}
+      <a href="{{ url_for('quiz_list') }}" class="btn btn-outline-primary mx-auto" style="width:fit-content">
+        View All Quizzes
+      </a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block title %}{{ quiz.topic }} Quiz — PetAid{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:760px">
+
+  <!-- ── Header ─────────────────────────────────────────── -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+      <a href="{{ url_for('quiz_list') }}" class="text-muted small text-decoration-none">
+        <i class="bi bi-arrow-left me-1"></i>Back to Quizzes
+      </a>
+      <h1 class="section-title h4 mb-0 mt-1">{{ quiz.topic }}</h1>
+      <p class="text-muted mb-0 small">
+        {{ quiz.pet_type }} — {{ quiz.difficulty }} —
+        {{ total_questions }} question{{ 's' if total_questions != 1 }}
+      </p>
+    </div>
+    <span class="badge bg-success-subtle text-success fw-700 rounded-pill px-3">
+      <i class="bi bi-shield-check me-1"></i>Vet Approved
+    </span>
+  </div>
+
+  <!-- ── Error Alert ─────────────────────────────────────── -->
+  {% if error %}
+  <div class="alert alert-danger d-flex gap-2 align-items-center mb-4">
+    <i class="bi bi-exclamation-circle-fill flex-shrink-0"></i>
+    <div>{{ error }}</div>
+  </div>
+  {% endif %}
+
+  <!-- ── Progress Bar ────────────────────────────────────── -->
+  <div class="d-flex justify-content-between small fw-700 text-muted mb-1">
+    <span>Progress</span>
+    <span id="progressLabel">0 / {{ total_questions }} answered</span>
+  </div>
+  <div class="progress-quiz mb-4">
+    <div class="bar" id="progressBar" style="width:0%"></div>
+  </div>
+
+  <!-- ── Quiz Form ───────────────────────────────────────── -->
+  <form method="POST" action="{{ url_for('quiz_submit', quiz_id=quiz.id) }}" id="quizForm">
+
+    {% for question in quiz.questions %}
+    <div class="card mb-4 p-4 question-card" id="qcard-{{ loop.index }}"
+         data-qid="{{ question.id }}">
+
+      <!-- Question header -->
+      <div class="d-flex gap-3 align-items-start mb-3">
+        <div class="step-number" style="background:var(--clr-dark)">{{ loop.index }}</div>
+        <p class="fw-700 mb-0 pt-1">{{ question.text }}</p>
+      </div>
+
+      <!-- Answer options -->
+      <div class="ps-5">
+        {% for option in question.options %}
+        <label class="quiz-option {% if saved_answers.get(question.id|string) == loop.index0 %}selected{% endif %}"
+               id="opt-{{ question.id }}-{{ loop.index0 }}"
+               data-qid="{{ question.id }}"
+               data-idx="{{ loop.index0 }}">
+          <input type="radio"
+                 name="q_{{ question.id }}"
+                 value="{{ loop.index0 }}"
+                 {% if saved_answers.get(question.id|string) == loop.index0 %}checked{% endif %}
+                 required />
+          <span class="me-2 fw-800 text-muted">{{ ["A","B","C","D"][loop.index0] }}.</span>
+          {{ option }}
+        </label>
+        {% endfor %}
+      </div>
+
+      <!-- Answered indicator -->
+      <div class="ps-5 mt-1">
+        <span class="small text-success fw-700 answered-check d-none" id="check-{{ question.id }}">
+          <i class="bi bi-check-circle-fill me-1"></i>Answered
+        </span>
+        <span class="small text-muted fw-600 unanswered-note" id="note-{{ question.id }}">
+          <i class="bi bi-circle me-1"></i>Not yet answered
+        </span>
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- ── Submit Section ─────────────────────────────────── -->
+    <div class="card p-4" style="background:var(--clr-primary-lt)">
+      <div class="d-flex flex-wrap gap-3 align-items-center justify-content-between">
+        <div>
+          <div class="fw-700" id="submitStatus">
+            Answer all {{ total_questions }} questions to enable submission.
+          </div>
+          <div class="small text-muted mt-1" id="answeredCount">0 of {{ total_questions }} answered</div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg fw-700 px-4"
+                id="submitBtn" disabled>
+          <i class="bi bi-send-fill me-2"></i>Submit Quiz
+        </button>
+      </div>
+    </div>
+
+  </form>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const TOTAL = {{ total_questions }};
+  const QUIZ_ID = {{ quiz.id }};
+  const answeredMap = {};
+
+  // Restore saved answers state
+  {% for qid, idx in saved_answers.items() %}
+    answeredMap["{{ qid }}"] = {{ idx }};
+    markAnswered("{{ qid }}");
+  {% endfor %}
+
+  // Bind option click events
+  document.querySelectorAll(".quiz-option").forEach(label => {
+    label.addEventListener("click", function() {
+      const qid = this.dataset.qid;
+      const idx = parseInt(this.dataset.idx);
+
+      // Deselect siblings
+      document.querySelectorAll(`.quiz-option[data-qid="${qid}"]`).forEach(l => {
+        l.classList.remove("selected");
+        l.querySelector("input").checked = false;
+      });
+
+      // Select this option
+      this.classList.add("selected");
+      this.querySelector("input").checked = true;
+
+      answeredMap[qid] = idx;
+      markAnswered(qid);
+      updateProgress();
+      autoSave();
+    });
+  });
+
+  function markAnswered(qid) {
+    const check = document.getElementById(`check-${qid}`);
+    const note = document.getElementById(`note-${qid}`);
+    if (check) check.classList.remove("d-none");
+    if (note) note.classList.add("d-none");
+  }
+
+  function updateProgress() {
+    const answered = Object.keys(answeredMap).length;
+    const pct = Math.round((answered / TOTAL) * 100);
+
+    document.getElementById("progressBar").style.width = pct + "%";
+    document.getElementById("progressLabel").textContent = `${answered} / ${TOTAL} answered`;
+    document.getElementById("answeredCount").textContent = `${answered} of ${TOTAL} answered`;
+
+    const submitBtn = document.getElementById("submitBtn");
+    const statusMsg = document.getElementById("submitStatus");
+
+    if (answered >= TOTAL) {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove("btn-primary");
+      submitBtn.classList.add("btn-success");
+      statusMsg.textContent = "All questions answered — ready to submit!";
+      statusMsg.style.color = "#0f5132";
+    } else {
+      submitBtn.disabled = true;
+      submitBtn.classList.remove("btn-success");
+      submitBtn.classList.add("btn-primary");
+      statusMsg.textContent = `Answer all ${TOTAL} questions to enable submission.`;
+      statusMsg.style.color = "";
+    }
+  }
+
+  // Auto-save progress to session via AJAX
+  function autoSave() {
+    fetch(`/quiz/${QUIZ_ID}/save`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answers: answeredMap }),
+    }).catch(() => {}); // Silently ignore save errors
+  }
+
+  // Initialise progress on page load
+  updateProgress();
+</script>
+{% endblock %}

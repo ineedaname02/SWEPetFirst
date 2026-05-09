@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "guide_id": 1,
+    "title": "How to Help a Choking Dog",
+    "description": "A step-by-step visual guide to safely performing the canine Heimlich manoeuvre and clearing airway obstructions in dogs.",
+    "duration": "3:42",
+    "url": "https://www.youtube.com/embed/Kb1gL2gQoVk",
+    "caption": true,
+    "approved": true
+  },
+  {
+    "id": 2,
+    "guide_id": 2,
+    "title": "Dog Poisoning: What To Do",
+    "description": "Learn how to identify signs of poisoning in dogs and the immediate steps to take while transporting to an emergency vet.",
+    "duration": "4:15",
+    "url": "https://www.youtube.com/embed/9ZKfuApzYHY",
+    "caption": true,
+    "approved": true
+  },
+  {
+    "id": 3,
+    "guide_id": 4,
+    "title": "Cat Choking Emergency Response",
+    "description": "Visual demonstration of how to safely identify and respond to a choking episode in cats without causing further harm.",
+    "duration": "3:10",
+    "url": "https://www.youtube.com/embed/JsuvlkZZhAA",
+    "caption": true,
+    "approved": true
+  }
+]

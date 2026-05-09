@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}Search Emergency Guides — PetAid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <!-- ── Page Header ─────────────────────────────────────── -->
+  <div class="mb-4">
+    <h1 class="section-title h3 mb-1">Search Emergency Guides</h1>
+    <p class="text-muted">Filter by pet type, emergency category, or use keywords to find the right guide.</p>
+  </div>
+
+  <!-- ── Search Form ─────────────────────────────────────── -->
+  <div class="card mb-4 p-4">
+    <form action="{{ url_for('search') }}" method="GET" id="searchForm">
+      <div class="row g-3">
+
+        <!-- Pet Type -->
+        <div class="col-md-3">
+          <label class="form-label fw-700 small text-uppercase" style="letter-spacing:.5px">Pet Type</label>
+          <select name="pet_type" class="form-select" id="petSelect">
+            <option value="">All Pets</option>
+            {% for pet in pets %}
+              <option value="{{ pet }}" {% if selected_pet == pet %}selected{% endif %}>{{ pet }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Emergency Category -->
+        <div class="col-md-3">
+          <label class="form-label fw-700 small text-uppercase" style="letter-spacing:.5px">Emergency Type</label>
+          <select name="emergency_category" class="form-select" id="catSelect">
+            <option value="">All Emergencies</option>
+            {% for cat in categories %}
+              <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Keyword -->
+        <div class="col-md-4">
+          <label class="form-label fw-700 small text-uppercase" style="letter-spacing:.5px">
+            Keyword <span class="text-muted fw-400">(max 50 chars)</span>
+          </label>
+          <input type="text" name="keyword" class="form-control" id="keywordInput"
+                 placeholder='e.g. "dog choking"' maxlength="50"
+                 value="{{ keyword }}" />
+          <div class="small text-muted mt-1" id="charCount">
+            <span id="kw-count">{{ keyword|length }}</span>/50 characters
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="col-md-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary w-100 fw-700">
+            <i class="bi bi-search me-1"></i>Search
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick pet chips -->
+      <div class="mt-3 d-flex flex-wrap gap-2">
+        {% set pet_css = {"Dog":"dog","Cat":"cat","Rabbit":"rabbit","Hamster":"hamster"} %}
+        {% set pet_icons = {"Dog":"🐶","Cat":"🐱","Rabbit":"🐰","Hamster":"🐹"} %}
+        <span class="small fw-700 text-muted me-1 align-self-center">Quick select:</span>
+        {% for pet in pets %}
+          <button type="button"
+                  class="pet-chip {{ pet_css.get(pet,'') }} {% if selected_pet == pet %}active{% endif %}"
+                  onclick="setPet('{{ pet }}')">
+            {{ pet_icons.get(pet,'') }} {{ pet }}
+          </button>
+        {% endfor %}
+        {% if selected_pet %}
+          <button type="button" class="pet-chip" onclick="setPet('')" style="background:#f1f3f5;color:#555">
+            ✕ Clear
+          </button>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- ── Results ─────────────────────────────────────────── -->
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="h5 mb-0 fw-800">
+      {% if result_count > 0 %}
+        {{ result_count }} guide{{ 's' if result_count != 1 }} found
+      {% else %}
+        No guides found
+      {% endif %}
+    </h2>
+    {% if selected_pet or selected_category or keyword %}
+      <a href="{{ url_for('search') }}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-x-circle me-1"></i>Clear all filters
+      </a>
+    {% endif %}
+  </div>
+
+  {% if results %}
+    <div class="row g-3" id="resultsGrid">
+      {% set cat_icons = {
+        "Choking":"bi-wind",
+        "Poisoning":"bi-exclamation-octagon",
+        "Bleeding":"bi-droplet-fill",
+        "Heatstroke":"bi-thermometer-high",
+        "Seizure":"bi-lightning-fill",
+        "Fracture":"bi-bandaid-fill"
+      } %}
+      {% for guide in results %}
+      <div class="col-md-6 col-lg-4">
+        <a href="{{ url_for('guide', guide_id=guide.id) }}" class="text-decoration-none">
+          <div class="card h-100 p-4" style="transition:.2s"
+               onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 30px rgba(0,0,0,.12)'"
+               onmouseout="this.style.transform='';this.style.boxShadow=''">
+
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <span class="pet-chip {{ guide.pet_type|lower }}">
+                  {{ {"Dog":"🐶","Cat":"🐱","Rabbit":"🐰","Hamster":"🐹"}.get(guide.pet_type,'🐾') }}
+                  {{ guide.pet_type }}
+                </span>
+              </div>
+              <span class="badge-emergency">
+                <i class="bi {{ cat_icons.get(guide.emergency_category, 'bi-heart-pulse') }} me-1"></i>
+                {{ guide.emergency_category }}
+              </span>
+            </div>
+
+            <h3 class="h6 fw-800 mb-2" style="color:var(--clr-dark)">{{ guide.title }}</h3>
+            <p class="small text-muted mb-3">{{ guide.summary }}</p>
+
+            <div class="mt-auto d-flex align-items-center justify-content-between">
+              <span class="small text-muted">
+                <i class="bi bi-list-ol me-1"></i>{{ guide.steps|length }} steps
+              </span>
+              {% if guide.video_id %}
+                <span class="small text-success fw-700">
+                  <i class="bi bi-play-circle me-1"></i>Video available
+                </span>
+              {% endif %}
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+
+  {% elif selected_pet or selected_category or keyword %}
+    <!-- No results state -->
+    <div class="card p-5 text-center">
+      <div style="font-size:4rem;opacity:.3">🔍</div>
+      <h3 class="h5 fw-800 mt-3 mb-2">No guides match your search</h3>
+      <p class="text-muted mb-4">
+        Try broadening your search — remove a filter or use a different keyword.
+      </p>
+      <div class="d-flex justify-content-center gap-2">
+        <a href="{{ url_for('search') }}" class="btn btn-outline-primary">Clear All Filters</a>
+        {% if selected_pet %}
+          <a href="{{ url_for('search', pet_type=selected_pet) }}" class="btn btn-primary">
+            View All {{ selected_pet }} Guides
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+  {% else %}
+    <!-- Initial state — show all prompts -->
+    <div class="card p-5 text-center">
+      <div style="font-size:4rem;opacity:.3">🐾</div>
+      <h3 class="h5 fw-800 mt-3 mb-2">Select a pet type or enter a keyword</h3>
+      <p class="text-muted">Use the filters above to find the right first-aid guide for your pet.</p>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Character counter for keyword input
+  const kw = document.getElementById("keywordInput");
+  const cnt = document.getElementById("kw-count");
+  if (kw) {
+    kw.addEventListener("input", () => { cnt.textContent = kw.value.length; });
+  }
+
+  // Pet chip quick-select
+  function setPet(value) {
+    document.getElementById("petSelect").value = value;
+    document.getElementById("searchForm").submit();
+  }
+</script>
+{% endblock %}

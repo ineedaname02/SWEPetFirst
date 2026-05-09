@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Quiz Results — PetAid{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:760px">
+
+  <!-- ── Score Summary ───────────────────────────────────── -->
+  <div class="card p-5 text-center mb-4">
+    <div class="score-circle mx-auto mb-3">
+      <span class="pct">{{ result.percentage }}%</span>
+      <span class="lbl">{{ result.score }}/{{ result.total }}</span>
+    </div>
+
+    <h1 class="section-title h3 mb-1">{{ result.quiz_topic }}</h1>
+    <p class="text-muted mb-3">{{ result.pet_type }} — Completed {{ result.timestamp }}</p>
+
+    {% if result.percentage >= 80 %}
+      <div class="alert alert-success d-inline-block px-4 fw-700">
+        <i class="bi bi-trophy-fill me-2"></i>Excellent! Great preparedness score.
+      </div>
+    {% elif result.percentage >= 60 %}
+      <div class="alert alert-warning d-inline-block px-4 fw-700">
+        <i class="bi bi-star-fill me-2"></i>Good work! Review the explanations below.
+      </div>
+    {% else %}
+      <div class="alert alert-danger d-inline-block px-4 fw-700">
+        <i class="bi bi-book-fill me-2"></i>Keep learning — review all explanations below.
+      </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-center gap-3 mt-3 flex-wrap">
+      <a href="{{ url_for('quiz', quiz_id=quiz_id) }}" class="btn btn-outline-primary fw-700">
+        <i class="bi bi-arrow-repeat me-1"></i>Retake Quiz
+      </a>
+      <a href="{{ url_for('quiz_list') }}" class="btn btn-primary fw-700">
+        <i class="bi bi-patch-question me-1"></i>More Quizzes
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Per-Question Review ─────────────────────────────── -->
+  <h2 class="h5 fw-800 mb-3">
+    <i class="bi bi-clipboard-check me-2" style="color:var(--clr-primary)"></i>
+    Answer Review
+  </h2>
+
+  {% for q in result.results %}
+  <div class="card mb-3 p-4">
+
+    <!-- Question header -->
+    <div class="d-flex gap-3 align-items-start mb-3">
+      <div class="step-number" style="background:{% if q.is_correct %}#198754{% else %}#e63946{% endif %}">
+        {% if q.is_correct %}
+          <i class="bi bi-check-lg"></i>
+        {% else %}
+          <i class="bi bi-x-lg"></i>
+        {% endif %}
+      </div>
+      <p class="fw-700 mb-0 pt-1">{{ q.question_text }}</p>
+    </div>
+
+    <!-- Options review -->
+    <div class="ps-5">
+      {% for option in q.options %}
+        {% set is_user = (loop.index0 == q.user_choice) %}
+        {% set is_correct = (loop.index0 == q.correct_answer) %}
+        <div class="quiz-option
+          {% if is_correct %}correct{% elif is_user and not is_correct %}wrong{% endif %}"
+             style="cursor:default">
+          <span class="me-2 fw-800 text-muted">{{ ["A","B","C","D"][loop.index0] }}.</span>
+          {{ option }}
+          {% if is_correct %}
+            <span class="float-end text-success fw-700 small">
+              <i class="bi bi-check-circle-fill"></i> Correct
+            </span>
+          {% elif is_user and not is_correct %}
+            <span class="float-end text-danger fw-700 small">
+              <i class="bi bi-x-circle-fill"></i> Your answer
+            </span>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Explanation -->
+    <div class="ps-5 mt-3">
+      <div class="p-3 rounded" style="background:var(--clr-primary-lt)">
+        <strong class="small text-uppercase" style="color:var(--clr-primary);letter-spacing:.5px">
+          <i class="bi bi-lightbulb-fill me-1"></i>Explanation
+        </strong>
+        <p class="mb-0 mt-1 small">{{ q.explanation }}</p>
+      </div>
+    </div>
+
+  </div>
+  {% endfor %}
+
+  <!-- ── Footer Actions ─────────────────────────────────── -->
+  <div class="card p-4 text-center">
+    <p class="text-muted mb-3">
+      Quiz content is reviewed and verified by licensed veterinary professionals.
+    </p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+      <a href="{{ url_for('quiz', quiz_id=quiz_id) }}" class="btn btn-outline-primary fw-700">
+        <i class="bi bi-arrow-repeat me-1"></i>Retake Quiz
+      </a>
+      <a href="{{ url_for('quiz_list') }}" class="btn btn-primary fw-700">
+        <i class="bi bi-collection me-1"></i>All Quizzes
+      </a>
+      <a href="{{ url_for('search') }}" class="btn btn-outline-secondary fw-700">
+        <i class="bi bi-search me-1"></i>Find Emergency Guide
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
