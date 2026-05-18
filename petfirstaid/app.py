@@ -3,12 +3,20 @@ Pet Emergency First-Aid Web Application
 Assignment 3 - Swinsoft Consulting / Local Veterinary Association
 Coding Standard: PEP 8 (Python Enhancement Proposal 8)
 Reference: https://peps.python.org/pep-0008/
+
+Storage: SQLite via database.py (petfirstaid.db)
+All persistent data (guides, videos, quizzes, feedback, quiz results) is
+read from and written to the SQLite database. JSON files in /data/ are used
+only as the initial seed source on first run.
 """
 
-import json
 import os
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify, redirect, url_for, session
+from flask import (
+    Flask, render_template, request, jsonify, redirect, url_for, session, flash
+)
+
+import database as db
 
 # ---------------------------------------------------------------------------
 # Application Factory
@@ -17,25 +25,8 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 app = Flask(__name__)
 app.secret_key = "petfirstaid_secret_key_2024"
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
-
-
-# ---------------------------------------------------------------------------
-# Data Access Layer  (replaces a database for this demo)
-# ---------------------------------------------------------------------------
-
-def load_json(filename):
-    """Load and return parsed JSON from the data directory."""
-    path = os.path.join(DATA_DIR, filename)
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-def save_json(filename, data):
-    """Serialise data to JSON and write to the data directory."""
-    path = os.path.join(DATA_DIR, filename)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+# Initialise database on startup (creates tables + seeds from JSON if empty)
+db.init_db()
 
 
 # ---------------------------------------------------------------------------
@@ -46,47 +37,26 @@ class SearchEngine:
     """
     Handles all search and filtering operations.
     Responsibilities:
-      - Accept pet type and/or emergency category to filter guides.
-      - Accept keyword input (max 50 chars) for text-based search.
-      - Return matching FirstAidGuide records within defined constraints.
-    Collaborators: guides.json (FirstAidGuide data)
+      - Accept pet type and/or emergency category to filter guides via DB.
+      - Accept keyword input (max 50 chars) and return matching guides.
+      - Return up to 10 relevant first-aid guides within defined constraints.
+    Collaborators: database.search_guides(), guides table
     """
 
     MAX_KEYWORD_LENGTH = 50
     MAX_RESULTS = 10
-    MIN_RESULTS = 3
 
     @staticmethod
-    def search(pet_type=None, emergency_category=None, keyword=None):
-        """Return matching guides based on pet type, category, or keyword."""
-        guides = load_json("guides.json")["guides"]
-        results = []
-
-        keyword = (keyword or "").strip()[:SearchEngine.MAX_KEYWORD_LENGTH].lower()
-
-        for guide in guides:
-            match = True
-
-            if pet_type and guide["pet_type"].lower() != pet_type.lower():
-                match = False
-
-            if emergency_category and guide["emergency_category"].lower() != emergency_category.lower():
-                match = False
-
-            if keyword and match:
-                searchable = (
-                    guide["title"] + " " +
-                    guide["summary"] + " " +
-                    guide["pet_type"] + " " +
-                    guide["emergency_category"]
-                ).lower()
-                if keyword not in searchable:
-                    match = False
-
-            if match:
-                results.append(guide)
-
-        return results[:SearchEngine.MAX_RESULTS]
+    def search(conn, pet_type=None, emergency_category=None, keyword=None):
+        """Query the database and return matching guide dicts."""
+        return db.search_guides(
+            conn,
+            pet_type=pet_type,
+            emergency_category=emergency_category,
+            keyword=keyword,
+            max_results=SearchEngine.MAX_RESULTS,
+            keyword_max_len=SearchEngine.MAX_KEYWORD_LENGTH,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -97,28 +67,24 @@ class QuizEngine:
     """
     Manages the complete quiz attempt lifecycle.
     Responsibilities:
-      - Load quiz questions.
+      - Load quiz with all questions and answers from the database.
       - Enforce all-questions-answered rule before submission.
-      - Score submission and produce a QuizResult.
-      - Support resume via session storage.
-    Collaborators: quizzes.json, session (QuizResult data)
+      - Score submission and produce a QuizResult dict.
+      - Persist scored result to quiz_results table.
+      - Support resume via Flask session.
+    Collaborators: database.get_quiz_with_questions(), database.insert_quiz_result()
     """
 
     @staticmethod
-    def get_quiz(quiz_id):
-        """Retrieve a quiz by its ID."""
-        quizzes = load_json("quizzes.json")
-        for quiz in quizzes:
-            if quiz["id"] == quiz_id:
-                return quiz
-        return None
+    def get_quiz(conn, quiz_id):
+        """Retrieve a full quiz (with questions and answers) by ID."""
+        return db.get_quiz_with_questions(conn, quiz_id)
 
     @staticmethod
     def score_quiz(quiz, user_answers):
         """
-        Score user answers against correct answers.
-        Returns a QuizResult dict containing score, per-question results,
-        and explanations (StandardScoringStrategy).
+        Score user answers against correct answers (StandardScoringStrategy).
+        Returns a QuizResult dict with per-question results and explanations.
         """
         results = []
         correct_count = 0
@@ -127,7 +93,6 @@ class QuizEngine:
             q_id = str(question["id"])
             user_choice = user_answers.get(q_id)
 
-            # Validate answer index
             if user_choice is not None:
                 try:
                     user_choice = int(user_choice)
@@ -151,6 +116,7 @@ class QuizEngine:
         percentage = round((correct_count / total) * 100) if total > 0 else 0
 
         return {
+            "quiz_id": quiz["id"],
             "quiz_topic": quiz["topic"],
             "pet_type": quiz["pet_type"],
             "score": correct_count,
@@ -162,51 +128,101 @@ class QuizEngine:
 
 
 # ---------------------------------------------------------------------------
-# Routes — Home
+# FeedbackManager  (controller)
+# ---------------------------------------------------------------------------
+
+class FeedbackManager:
+    """
+    Coordinates collection, validation, and storage of user feedback.
+    Responsibilities:
+      - Validate rating (integer 1-5) and comment length (max 200 chars).
+      - Store feedback with timestamp via database layer.
+      - Retrieve feedback and average ratings for display.
+    Collaborators: database.insert_feedback(), database.get_average_rating()
+    """
+
+    VALID_CONTENT_TYPES = {"guide", "video", "quiz"}
+    MAX_COMMENT_LENGTH = 200
+
+    @staticmethod
+    def validate(rating, comment):
+        """
+        Validate feedback inputs.
+        Returns (True, None) on success or (False, error_message) on failure.
+        """
+        try:
+            rating_int = int(rating)
+        except (ValueError, TypeError):
+            return False, "Rating must be a whole number between 1 and 5."
+
+        if not 1 <= rating_int <= 5:
+            return False, "Rating must be between 1 and 5."
+
+        if comment and len(comment) > FeedbackManager.MAX_COMMENT_LENGTH:
+            return False, (
+                f"Comment must be {FeedbackManager.MAX_COMMENT_LENGTH} "
+                "characters or fewer."
+            )
+
+        return True, None
+
+    @staticmethod
+    def submit(conn, content_type, content_id, rating, comment):
+        """Validate and persist a feedback record. Returns new row id."""
+        valid, error = FeedbackManager.validate(rating, comment)
+        if not valid:
+            raise ValueError(error)
+        if content_type not in FeedbackManager.VALID_CONTENT_TYPES:
+            raise ValueError("Invalid content type.")
+        return db.insert_feedback(conn, content_type, content_id, rating, comment)
+
+
+# ---------------------------------------------------------------------------
+# Routes - Home
 # ---------------------------------------------------------------------------
 
 @app.route("/")
 def index():
     """Render the home / landing page."""
-    data = load_json("guides.json")
-    return render_template(
-        "index.html",
-        pets=data["pets"],
-        categories=data["emergency_categories"],
-    )
+    with db.get_db() as conn:
+        pets = db.get_all_pets(conn)
+        categories = db.get_all_categories(conn)
+    return render_template("index.html", pets=pets, categories=categories)
 
 
 # ---------------------------------------------------------------------------
-# Routes — Search (Task 1)
+# Routes - Search (Task 1)
 # ---------------------------------------------------------------------------
 
 @app.route("/search")
 def search():
     """
-    Task 1 — Search Emergency Information.
+    Task 1 - Search Emergency Information.
     Accepts GET parameters: pet_type, emergency_category, keyword.
-    Returns filtered guide results.
+    Queries the SQLite guides table and returns filtered results.
     """
-    data = load_json("guides.json")
     pet_type = request.args.get("pet_type", "").strip()
     emergency_category = request.args.get("emergency_category", "").strip()
     keyword = request.args.get("keyword", "").strip()
 
-    # Validate keyword length (boundary condition)
     if len(keyword) > SearchEngine.MAX_KEYWORD_LENGTH:
         keyword = keyword[:SearchEngine.MAX_KEYWORD_LENGTH]
 
-    results = SearchEngine.search(
-        pet_type=pet_type or None,
-        emergency_category=emergency_category or None,
-        keyword=keyword or None,
-    )
+    with db.get_db() as conn:
+        pets = db.get_all_pets(conn)
+        categories = db.get_all_categories(conn)
+        results = SearchEngine.search(
+            conn,
+            pet_type=pet_type or None,
+            emergency_category=emergency_category or None,
+            keyword=keyword or None,
+        )
 
     return render_template(
         "search.html",
         results=results,
-        pets=data["pets"],
-        categories=data["emergency_categories"],
+        pets=pets,
+        categories=categories,
         selected_pet=pet_type,
         selected_category=emergency_category,
         keyword=keyword,
@@ -215,40 +231,33 @@ def search():
 
 
 # ---------------------------------------------------------------------------
-# Routes — First-Aid Guide (Task 3)
+# Routes - First-Aid Guide (Task 3)
 # ---------------------------------------------------------------------------
 
 @app.route("/guide/<int:guide_id>")
 def guide(guide_id):
     """
-    Task 3 — View First-Aid Instructions.
-    Retrieves and displays a single guide with steps, warnings,
-    next-step recommendations, and linked video.
+    Task 3 - View First-Aid Instructions.
+    Retrieves guide, linked video, alternatives, and average rating from SQLite.
     """
-    guides = load_json("guides.json")["guides"]
-    videos = load_json("videos.json")
+    with db.get_db() as conn:
+        selected_guide = db.get_guide_by_id(conn, guide_id)
 
-    selected_guide = next((g for g in guides if g["id"] == guide_id), None)
+        if not selected_guide:
+            return render_template("404.html"), 404
 
-    if not selected_guide:
-        return render_template("404.html"), 404
+        linked_video = None
+        if selected_guide.get("video_id"):
+            linked_video = db.get_video_by_id(conn, selected_guide["video_id"])
 
-    # Retrieve linked video if present
-    linked_video = None
-    if selected_guide.get("video_id"):
-        linked_video = next(
-            (v for v in videos if v["id"] == selected_guide["video_id"]),
-            None,
+        alternatives = db.get_alternative_guides(
+            conn,
+            guide_id=guide_id,
+            pet_type=selected_guide["pet_type"],
+            emergency_category=selected_guide["emergency_category"],
         )
 
-    # Build alternative guide suggestions (same pet or same category)
-    alternatives = [
-        g for g in guides
-        if g["id"] != guide_id and (
-            g["pet_type"] == selected_guide["pet_type"] or
-            g["emergency_category"] == selected_guide["emergency_category"]
-        )
-    ][:3]
+        avg_rating, rating_count = db.get_average_rating(conn, "guide", guide_id)
 
     return render_template(
         "guide.html",
@@ -256,82 +265,79 @@ def guide(guide_id):
         video=linked_video,
         alternatives=alternatives,
         total_steps=len(selected_guide["steps"]),
+        avg_rating=avg_rating,
+        rating_count=rating_count,
     )
 
 
 # ---------------------------------------------------------------------------
-# Routes — Video (Task 4)
+# Routes - Video (Task 4)
 # ---------------------------------------------------------------------------
 
 @app.route("/video/<int:video_id>")
 def video(video_id):
     """
-    Task 4 — Watch Veterinary Guidance Video.
-    Displays an embedded video player with related guides and resources.
+    Task 4 - Watch Veterinary Guidance Video.
+    Retrieves video metadata and linked guide from SQLite.
     """
-    videos = load_json("videos.json")
-    guides = load_json("guides.json")["guides"]
+    with db.get_db() as conn:
+        selected_video = db.get_video_by_id(conn, video_id)
 
-    selected_video = next((v for v in videos if v["id"] == video_id), None)
+        if not selected_video:
+            return render_template("404.html"), 404
 
-    if not selected_video:
-        return render_template("404.html"), 404
-
-    # Retrieve parent guide
-    parent_guide = next(
-        (g for g in guides if g["id"] == selected_video["guide_id"]),
-        None,
-    )
-
-    # Related videos (other videos, max 3)
-    related_videos = [v for v in videos if v["id"] != video_id][:3]
+        parent_guide = db.get_guide_by_id(conn, selected_video["guide_id"])
+        related_videos = db.get_related_videos(conn, exclude_video_id=video_id)
+        avg_rating, rating_count = db.get_average_rating(conn, "video", video_id)
 
     return render_template(
         "video.html",
         video=selected_video,
         guide=parent_guide,
         related_videos=related_videos,
+        avg_rating=avg_rating,
+        rating_count=rating_count,
     )
 
 
 # ---------------------------------------------------------------------------
-# Routes — Quiz List
+# Routes - Quiz List
 # ---------------------------------------------------------------------------
 
 @app.route("/quizzes")
 def quiz_list():
-    """Display all available quizzes, filterable by pet type."""
-    quizzes = load_json("quizzes.json")
-    data = load_json("guides.json")
+    """Display all available quizzes, optionally filtered by pet type."""
     pet_filter = request.args.get("pet_type", "").strip()
 
-    if pet_filter:
-        quizzes = [q for q in quizzes if q["pet_type"] == pet_filter]
+    with db.get_db() as conn:
+        pets = db.get_all_pets(conn)
+        quizzes = db.get_all_quizzes(conn, pet_type=pet_filter or None)
 
     return render_template(
         "quiz_list.html",
         quizzes=quizzes,
-        pets=data["pets"],
+        pets=pets,
         selected_pet=pet_filter,
     )
 
 
 # ---------------------------------------------------------------------------
-# Routes — Take Quiz (Task 5)
+# Routes - Take Quiz (Task 5)
 # ---------------------------------------------------------------------------
 
 @app.route("/quiz/<int:quiz_id>", methods=["GET"])
 def quiz(quiz_id):
     """
-    Task 5 — Take Knowledge Quiz (display phase).
-    Loads quiz questions. Restores in-progress answers from session.
+    Task 5 - Take Knowledge Quiz (display phase).
+    Loads quiz with questions from SQLite. Restores in-progress answers
+    from session to support resume functionality.
     """
-    quiz_data = QuizEngine.get_quiz(quiz_id)
+    with db.get_db() as conn:
+        quiz_data = QuizEngine.get_quiz(conn, quiz_id)
 
     if not quiz_data:
         return render_template("404.html"), 404
 
-    # Restore saved answers from session (resume functionality)
     saved_answers = session.get(f"quiz_{quiz_id}_answers", {})
 
     return render_template(
@@ -344,28 +350,23 @@ def quiz(quiz_id):
 
 @app.route("/quiz/<int:quiz_id>/save", methods=["POST"])
 def quiz_save(quiz_id):
-    """
-    Auto-save quiz progress to session so the user can resume later.
-    Accepts JSON body: { "answers": { "1": 2, "2": 0, ... } }
-    """
+    """Auto-save quiz progress to session for resume support."""
     body = request.get_json(silent=True) or {}
     answers = body.get("answers", {})
-
-    # Persist to session
     session[f"quiz_{quiz_id}_answers"] = answers
     session.modified = True
-
     return jsonify({"status": "saved", "count": len(answers)})
 
 
 @app.route("/quiz/<int:quiz_id>/submit", methods=["POST"])
 def quiz_submit(quiz_id):
     """
-    Task 5 — Submit quiz answers.
-    Validates all questions answered before scoring.
-    Returns scored QuizResult.
+    Task 5 - Submit quiz answers.
+    Validates all questions answered, scores the attempt, and persists
+    the result to the quiz_results table in SQLite.
     """
-    quiz_data = QuizEngine.get_quiz(quiz_id)
+    with db.get_db() as conn:
+        quiz_data = QuizEngine.get_quiz(conn, quiz_id)
 
     if not quiz_data:
         return render_template("404.html"), 404
@@ -379,11 +380,9 @@ def quiz_submit(quiz_id):
         if value is not None:
             user_answers[key] = value
 
-    # Validate all questions answered (boundary condition)
     if len(user_answers) < total_questions:
         saved_answers = {k: int(v) for k, v in user_answers.items()}
         session[f"quiz_{quiz_id}_answers"] = saved_answers
-
         error = f"Please answer all {total_questions} questions before submitting."
         return render_template(
             "quiz.html",
@@ -393,33 +392,124 @@ def quiz_submit(quiz_id):
             error=error,
         )
 
-    # Score the quiz
     quiz_result = QuizEngine.score_quiz(quiz_data, user_answers)
 
-    # Clear saved progress after successful submission
-    session.pop(f"quiz_{quiz_id}_answers", None)
+    with db.get_db() as conn:
+        db.insert_quiz_result(
+            conn,
+            quiz_id=quiz_id,
+            score=quiz_result["score"],
+            total=quiz_result["total"],
+            percentage=quiz_result["percentage"],
+            answers_snapshot=quiz_result["results"],
+        )
 
+    session.pop(f"quiz_{quiz_id}_answers", None)
     return render_template("quiz_result.html", result=quiz_result, quiz_id=quiz_id)
 
 
 # ---------------------------------------------------------------------------
-# Routes — API Endpoints (JSON)
+# Routes - Feedback (Task 6)
+# ---------------------------------------------------------------------------
+
+@app.route("/feedback", methods=["GET", "POST"])
+def feedback():
+    """
+    Task 6 - Submit Feedback.
+    GET:  Display the feedback form pre-filled from query parameters.
+    POST: Validate rating (1-5) and comment (max 200 chars), then store
+          the record in the SQLite feedback table with a timestamp.
+    """
+    if request.method == "POST":
+        content_type = request.form.get("content_type", "").strip()
+        content_id = request.form.get("content_id", "").strip()
+        rating = request.form.get("rating", "").strip()
+        comment = request.form.get("comment", "").strip()
+
+        if content_type not in FeedbackManager.VALID_CONTENT_TYPES:
+            flash("Invalid content type for feedback.", "danger")
+            return redirect(url_for("index"))
+
+        try:
+            content_id_int = int(content_id)
+            if content_id_int < 1:
+                raise ValueError
+        except (ValueError, TypeError):
+            flash("Invalid content reference.", "danger")
+            return redirect(url_for("index"))
+
+        valid, error = FeedbackManager.validate(rating, comment)
+        if not valid:
+            return render_template(
+                "feedback.html",
+                error=error,
+                content_type=content_type,
+                content_id=content_id,
+                rating=rating,
+                comment=comment,
+            )
+
+        with db.get_db() as conn:
+            FeedbackManager.submit(conn, content_type, content_id_int, rating, comment)
+
+        flash("Thank you - your feedback has been submitted!", "success")
+        return redirect(_feedback_redirect(content_type, content_id_int))
+
+    content_type = request.args.get("content_type", "guide")
+    content_id = request.args.get("content_id", "1")
+    return render_template(
+        "feedback.html",
+        error=None,
+        content_type=content_type,
+        content_id=content_id,
+        rating="",
+        comment="",
+    )
+
+
+def _feedback_redirect(content_type, content_id):
+    """Return the URL to redirect to after successful feedback submission."""
+    if content_type == "guide":
+        return url_for("guide", guide_id=content_id)
+    if content_type == "video":
+        return url_for("video", video_id=content_id)
+    if content_type == "quiz":
+        return url_for("quiz", quiz_id=content_id)
+    return url_for("index")
+
+
+# ---------------------------------------------------------------------------
+# Routes - JSON API
 # ---------------------------------------------------------------------------
 
 @app.route("/api/guides")
 def api_guides():
-    """JSON API — return guides filtered by pet_type and/or category."""
+    """JSON API - return guides filtered by pet_type and/or category."""
     pet_type = request.args.get("pet_type")
     category = request.args.get("category")
-    results = SearchEngine.search(pet_type=pet_type, emergency_category=category)
+    with db.get_db() as conn:
+        results = SearchEngine.search(
+            conn, pet_type=pet_type, emergency_category=category
+        )
     return jsonify(results)
 
 
 @app.route("/api/pets")
 def api_pets():
-    """JSON API — return list of supported pet types."""
-    data = load_json("guides.json")
-    return jsonify(data["pets"])
+    """JSON API - return list of supported pet types."""
+    with db.get_db() as conn:
+        pets = db.get_all_pets(conn)
+    return jsonify(pets)
+
+
+@app.route("/api/feedback/<content_type>/<int:content_id>")
+def api_feedback(content_type, content_id):
+    """JSON API - return all feedback records for a content item."""
+    if content_type not in FeedbackManager.VALID_CONTENT_TYPES:
+        return jsonify({"error": "Invalid content type"}), 400
+    with db.get_db() as conn:
+        rows = db.get_feedback_for_content(conn, content_type, content_id)
+    return jsonify(rows)
 
 
 # ---------------------------------------------------------------------------
@@ -441,4 +531,4 @@ def server_error(e):
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5575)

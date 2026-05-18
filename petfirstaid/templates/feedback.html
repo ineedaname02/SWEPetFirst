@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}Submit Feedback — PetAid{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:640px">
+
+  <!-- ── Header ─────────────────────────────────────────── -->
+  <div class="mb-4">
+    <a href="javascript:history.back()" class="text-muted small text-decoration-none">
+      <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+    <h1 class="section-title h3 mb-1 mt-2">Submit Feedback</h1>
+    <p class="text-muted mb-0">
+      Your feedback helps us improve the quality of our emergency guides and content.
+    </p>
+  </div>
+
+  <!-- ── Error Alert ─────────────────────────────────────── -->
+  {% if error %}
+  <div class="alert alert-danger d-flex gap-2 align-items-start mb-4">
+    <i class="bi bi-exclamation-circle-fill mt-1 flex-shrink-0"></i>
+    <div>{{ error }}</div>
+  </div>
+  {% endif %}
+
+  <!-- ── Feedback Form ───────────────────────────────────── -->
+  <div class="card p-4">
+    <form method="POST" action="{{ url_for('feedback') }}" id="feedbackForm" novalidate>
+
+      <!-- Hidden fields — content context -->
+      <input type="hidden" name="content_type" value="{{ content_type }}" />
+      <input type="hidden" name="content_id"   value="{{ content_id }}" />
+
+      <!-- Content type display -->
+      <div class="mb-4 p-3 rounded" style="background:var(--clr-primary-lt)">
+        <div class="small fw-700 text-muted text-uppercase mb-1" style="letter-spacing:.5px">
+          Giving feedback for
+        </div>
+        <div class="fw-700" style="color:var(--clr-dark)">
+          {% if content_type == "guide" %}
+            <i class="bi bi-journal-medical me-2" style="color:var(--clr-primary)"></i>
+            First-Aid Guide #{{ content_id }}
+          {% elif content_type == "video" %}
+            <i class="bi bi-play-circle me-2" style="color:var(--clr-primary)"></i>
+            Instructional Video #{{ content_id }}
+          {% elif content_type == "quiz" %}
+            <i class="bi bi-patch-question me-2" style="color:var(--clr-primary)"></i>
+            Knowledge Quiz #{{ content_id }}
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Rating -->
+      <div class="mb-4">
+        <label class="form-label fw-700">
+          Rating <span class="text-danger">*</span>
+          <span class="text-muted fw-400 small">(1 = poor, 5 = excellent)</span>
+        </label>
+
+        <!-- Star rating UI -->
+        <div class="d-flex gap-2 mb-2" id="starRow">
+          {% for i in range(1, 6) %}
+          <label class="star-label" style="cursor:pointer;font-size:2rem;color:#dee2e6;transition:.15s"
+                 id="star-label-{{ i }}">
+            <input type="radio" name="rating" value="{{ i }}" class="d-none"
+                   {% if rating|string == i|string %}checked{% endif %}
+                   required />
+            <i class="bi bi-star-fill"></i>
+          </label>
+          {% endfor %}
+        </div>
+
+        <div class="small text-muted" id="ratingHint">Click a star to select your rating.</div>
+        <div class="invalid-feedback d-block" id="ratingError" style="display:none!important"></div>
+      </div>
+
+      <!-- Comment -->
+      <div class="mb-4">
+        <label for="comment" class="form-label fw-700">
+          Comment
+          <span class="text-muted fw-400 small">(optional, max 200 characters)</span>
+        </label>
+        <textarea id="comment" name="comment" class="form-control" rows="4"
+                  maxlength="200"
+                  placeholder="Share what was helpful, unclear, or could be improved…">{{ comment }}</textarea>
+        <div class="d-flex justify-content-between mt-1">
+          <div class="small text-muted">All feedback is reviewed by our content team.</div>
+          <div class="small text-muted"><span id="charCount">{{ comment|length }}</span>/200</div>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="d-flex gap-3 align-items-center flex-wrap">
+        <button type="submit" class="btn btn-primary fw-700 px-4" id="submitBtn">
+          <i class="bi bi-send-fill me-2"></i>Submit Feedback
+        </button>
+        <a href="javascript:history.back()" class="btn btn-outline-secondary fw-700">
+          Skip
+        </a>
+        <span class="small text-muted ms-auto">
+          <i class="bi bi-shield-check me-1"></i>Stored securely with timestamp
+        </span>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ── Info note ──────────────────────────────────────── -->
+  <div class="mt-3 small text-muted text-center">
+    Feedback is optional. You can skip at any time and return to the content.
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const starLabels = document.querySelectorAll(".star-label");
+  const ratingInputs = document.querySelectorAll("input[name='rating']");
+  const ratingHint = document.getElementById("ratingHint");
+  const ratingError = document.getElementById("ratingError");
+  const submitBtn = document.getElementById("submitBtn");
+
+  const ratingLabels = ["", "Poor", "Fair", "Good", "Very Good", "Excellent"];
+  const ratingColors = ["", "#e63946", "#f4a261", "#f4d03f", "#2ecc71", "#1a6b4a"];
+
+  // Restore saved rating on page load (validation error case)
+  let currentRating = 0;
+  ratingInputs.forEach((inp, idx) => {
+    if (inp.checked) {
+      currentRating = idx + 1;
+    }
+  });
+  if (currentRating > 0) highlightStars(currentRating);
+
+  // Star hover and click
+  starLabels.forEach((label, idx) => {
+    const val = idx + 1;
+
+    label.addEventListener("mouseenter", () => highlightStars(val));
+    label.addEventListener("mouseleave", () => highlightStars(currentRating));
+
+    label.addEventListener("click", () => {
+      currentRating = val;
+      ratingInputs[idx].checked = true;
+      highlightStars(val);
+      ratingError.style.setProperty("display", "none", "important");
+      ratingHint.textContent = ratingLabels[val];
+      ratingHint.style.color = ratingColors[val];
+      ratingHint.style.fontWeight = "700";
+    });
+  });
+
+  function highlightStars(count) {
+    starLabels.forEach((label, i) => {
+      label.style.color = i < count ? (ratingColors[count] || "#f4a261") : "#dee2e6";
+    });
+  }
+
+  // Character counter for comment
+  const commentArea = document.getElementById("comment");
+  const charCount = document.getElementById("charCount");
+  commentArea.addEventListener("input", () => {
+    charCount.textContent = commentArea.value.length;
+  });
+
+  // Client-side validation before submit
+  document.getElementById("feedbackForm").addEventListener("submit", function(e) {
+    if (currentRating === 0) {
+      e.preventDefault();
+      ratingError.textContent = "Please select a rating before submitting.";
+      ratingError.style.removeProperty("display");
+      starLabels.forEach(l => {
+        l.style.animation = "none";
+        setTimeout(() => l.style.animation = "", 10);
+      });
+      starLabels[0].scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  });
+</script>
+{% endblock %}
